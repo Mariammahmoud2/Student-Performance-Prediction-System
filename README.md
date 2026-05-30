@@ -1,4 +1,4 @@
-# 🎓 EduPRE: AI-Driven Student Performance & Quiz System
+# EduPRE: AI-Driven Student Performance & Quiz System
 
 EduPRE is a sophisticated web platform designed to evaluate student performance using **Laravel** for the core engine and **Python Machine Learning** for predictive analytics. It also integrates the **Gemini API** for intelligent CV parsing and feedback.
 
@@ -14,7 +14,7 @@ EduPRE is a sophisticated web platform designed to evaluate student performance 
 *   **AI/ML Logic:** Python 3.x (Pandas, CatBoost)
 *   **Frontend:** Blade, Tailwind CSS, Alpine.js
 *   **Database:** MariaDB
-*   **APIs:** Google Gemini API
+*   
 
 ##   AI Implementation
 The core AI logic is located in the `scripts/` directory:
