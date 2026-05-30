@@ -6,6 +6,7 @@
     <title>EduPRE</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    @yield('styles')
 </head>
 <body class="bg-[#f3f4f6] font-sans antialiased">
 
@@ -41,7 +42,7 @@
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li>Address: Sadat City - Menoufia</li>
                         <li>Email: EDUPRE@gmail.com</li>
-                        <li>Phone: +20123456789</li>
+                        <li>Phone: +201000000000</li>
                     </ul>
                 </div>
             </div>
@@ -52,5 +53,6 @@
         </div>
     </footer>
 
+    @yield('scripts')
 </body>
 </html>

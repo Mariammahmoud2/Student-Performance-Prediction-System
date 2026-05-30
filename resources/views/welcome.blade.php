@@ -211,7 +211,7 @@
             <div class="step">
                 <div class="step-num">Step 01</div>
                 <div class="step-title">Answer</div>
-                <div class="step-sub">10 smart questions about your habits</div>
+                <div class="step-sub">  smart questions about your habits</div>
             </div>
             <div class="step">
                 <div class="step-num">Step 02</div>

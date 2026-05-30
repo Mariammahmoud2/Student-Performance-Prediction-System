@@ -1,15 +1,17 @@
 <?php
 
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
-    protected $fillable = ['question_text', 'input_type', 'options', 'batch_number', 'min', 'max'];
+    protected $fillable = [
+        'question_text', 'input_type', 'options',
+        'batch_number', 'min', 'max'
+    ];
 
-     protected $casts = [
+    protected $casts = [
         'options' => 'array',
     ];
 
