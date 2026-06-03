@@ -1,8 +1,9 @@
 [phases.setup]
-nixPkgs = ["python3", "python312Packages.pip", "nodejs_22"]
+nixPkgs = ["python3", "python312Packages.pip", "nodejs_22", "php83", "php83Packages.composer"]
 
 [phases.install]
 cmds = [
+    "composer install --optimize-autoloader --no-scripts --no-interaction",
     "npm ci",
     "pip install -r requirements.txt --break-system-packages"
 ]
