@@ -69,7 +69,7 @@ class QuizViewController extends Controller
 
     public function start(Request $request, $batch)
     {
-        // أي session ناقصة قديمة → abandon عشان اليوزر ميعلقش
+        // أي session ناقصة قديمة ← abandon عشان اليوزر ميعلقش
         QuizSession::where('user_id', auth()->id())
             ->inProgress()
             ->update(['predicted_performance' => 'Abandoned']);
@@ -104,6 +104,7 @@ class QuizViewController extends Controller
 
         $questions = Question::where('batch_number', $batch)->paginate(1);
 
+        // تحويل الداتا مباشرة جوه الـ Underlying Collection قبل العرض في الـ Blade
         $questions->getCollection()->transform(function ($question) {
             $question->display_text = QuestionMapper::getDisplayQuestion($question->question_text);
 
@@ -148,7 +149,7 @@ class QuizViewController extends Controller
         // حساب عدد الأسئلة الكلي في الـ Batch الحالي
         $totalQuestionsInBatch = Question::where('batch_number', $request->batch)->count();
         
-        // حساب عدد الإجابات اللي اليوزر جاوبها فعلياً في الـ Batch الحالي عشان نعرف السيرفر واقف فين
+        // حساب عدد الإجابات اللي اليوزر جاوبها فعلياً في الـ Batch الحالي
         $answeredInBatchCount = QuizAnswer::where('quiz_session_id', $session->id)
             ->whereHas('question', function($q) use ($request) {
                 $q->where('batch_number', $request->batch);
@@ -187,9 +188,12 @@ class QuizViewController extends Controller
             ->run('python3 ' . base_path('scripts/predict_student.py'));
 
         if (!$predictProcess->successful()) {
-            Log::error('Python Predict Error: ' . $predictProcess->errorOutput());
-            return redirect()->route('quizzes.index')
-                ->with('error', 'AI Processing Error. Please try again.');
+            // كود الـ dd ده عشان لو حصل أي خطأ في البايثون يطبع في وشنا على الشاشة علطول
+            dd([
+                'Exit Code' => $predictProcess->exitCode(),
+                'Error Output' => $predictProcess->errorOutput(),
+                'Standard Output' => $predictProcess->output()
+            ]);
         }
 
         $output     = json_decode($predictProcess->output(), true);

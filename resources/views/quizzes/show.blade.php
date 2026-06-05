@@ -440,10 +440,11 @@
 
         <form method="POST" action="{{ route('quizzes.save') }}" id="quiz-form">
             @csrf
-            <input type="hidden" name="question_id"    value="{{ $question->id }}">
+            <input type="hidden" name="question_id"     value="{{ $question->id }}">
             <input type="hidden" name="batch"           value="{{ $batch }}">
             <input type="hidden" name="next_page"       value="{{ $currentPage + 1 }}">
             <input type="hidden" name="quiz_session_id" value="{{ $sessionId }}">
+            <input type="hidden" name="input_type"      value="{{ $inputType }}" id="question-input-type">
 
             {{-- SELECT → option cards --}}
             @if ($inputType === 'select')
@@ -519,16 +520,24 @@
 function selectOption(value, el) {
     document.querySelectorAll('.option-item').forEach(o => o.classList.remove('selected'));
     el.classList.add('selected');
-    document.getElementById('selected-answer').value = value;
+    const selectInput = document.getElementById('selected-answer');
+    if(selectInput) {
+        selectInput.value = value;
+    }
 }
 
-// Validate select before submit
+// Fixed validation loop
 document.getElementById('quiz-form').addEventListener('submit', function(e) {
-    const hidden = document.getElementById('selected-answer');
-    if (hidden && hidden.value === '') {
-        e.preventDefault();
-        alert('Please select an answer before continuing.');
+    const inputType = document.getElementById('question-input-type').value;
+    
+    if (inputType === 'select') {
+        const hidden = document.getElementById('selected-answer');
+        if (hidden && hidden.value === '') {
+            e.preventDefault();
+            alert('Please select an answer before continuing.');
+        }
     }
+    // في حالة الـ number السلايدر واخد قيمة افتراضية دايماً فمش هيوقف الفورم
 });
 </script>
 @endsection
