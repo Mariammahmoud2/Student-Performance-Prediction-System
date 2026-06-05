@@ -49,5 +49,4 @@ RUN chmod -R 775 storage bootstrap/cache \
 # 11. فتح بورت 80
 EXPOSE 80
 
-# 12. أمر تشغيل الـ PHP و الـ Nginx معاً
-CMD php artisan migrate:fresh --force && php artisan db:seed --force && php-fpm -D && nginx -g "daemon off;"
+CMD php artisan migrate --force && php-fpm -D && nginx -g "daemon off;"
