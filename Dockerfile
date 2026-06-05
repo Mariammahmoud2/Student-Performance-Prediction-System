@@ -1,10 +1,9 @@
 # 1. استخدام نسخة PHP المتوافقة مع لارافيل
 FROM php:8.4-fpm-alpine
 
-# 2. تثبيت الأدوات والـ Nginx والـ Supervisor والـ Node
+# 2. تثبيت الأدوات والـ Nginx والـ Node
 RUN apk add --no-cache \
     nginx \
-    supervisor \
     curl \
     libpng-dev \
     libxml2-dev \
@@ -50,5 +49,5 @@ RUN chmod -R 775 storage bootstrap/cache \
 # 11. فتح بورت 80
 EXPOSE 80
 
-# 12. أمر التشغيل النهائي لتشغيل السيرفر وعمل الـ Migrations
+# 12. أمر تشغيل الـ PHP و الـ Nginx معاً
 CMD php artisan migrate --force && php-fpm -D && nginx -g "daemon off;"
