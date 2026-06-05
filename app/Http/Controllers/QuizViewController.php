@@ -126,7 +126,6 @@ class QuizViewController extends Controller
             'question_id'     => 'required|exists:questions,id',
             'answer'          => 'required',
             'batch'           => 'required|integer',
-            'next_page'       => 'required|integer',
             'quiz_session_id' => 'required|exists:quiz_sessions,id',
         ]);
 
@@ -136,6 +135,7 @@ class QuizViewController extends Controller
             ->inProgress()
             ->firstOrFail();
 
+        // حفظ أو تحديث الإجابة
         QuizAnswer::updateOrCreate(
             [
                 'user_id'         => auth()->id(),
@@ -145,16 +145,26 @@ class QuizViewController extends Controller
             ['answer' => $request->answer]
         );
 
-        $totalQuestions = Question::where('batch_number', $request->batch)->count();
+        // حساب عدد الأسئلة الكلي في الـ Batch الحالي
+        $totalQuestionsInBatch = Question::where('batch_number', $request->batch)->count();
+        
+        // حساب عدد الإجابات اللي اليوزر جاوبها فعلياً في الـ Batch الحالي عشان نعرف السيرفر واقف فين
+        $answeredInBatchCount = QuizAnswer::where('quiz_session_id', $session->id)
+            ->whereHas('question', function($q) use ($request) {
+                $q->where('batch_number', $request->batch);
+            })->count();
 
-        if ($request->next_page <= $totalQuestions) {
+        // لو لسه مخلصش أسئلة الـ Batch الحالي، انقل على السؤال التالي بالترتيب
+        if ($answeredInBatchCount < $totalQuestionsInBatch) {
+            $nextPage = $answeredInBatchCount + 1;
             return redirect()->to(
                 route('quizzes.show', $request->batch) .
-                '?page=' . $request->next_page .
+                '?page=' . $nextPage .
                 '&quiz_session_id=' . $session->id
             );
         }
 
+        // لو خلص الـ Batch الحالي.. نشوف هل فيه Batch بعده؟
         $nextBatch       = $request->batch + 1;
         $nextBatchExists = Question::where('batch_number', $nextBatch)->exists();
 
@@ -165,7 +175,9 @@ class QuizViewController extends Controller
             );
         }
 
-        // كل الـ batches خلصت → شغّل الـ model
+        // ------------------------------------------------------------
+        // كدة الـ 30 سؤال خلصوا بالكامل! هنا يبدأ الربط مع موديل الـ Python
+        // ------------------------------------------------------------
         $allAnswers = QuizAnswer::where('quiz_session_id', $session->id)
             ->orderBy('question_id', 'asc')
             ->pluck('answer')
