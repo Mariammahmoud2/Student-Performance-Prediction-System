@@ -1,6 +1,7 @@
-# 1. نستخدم نسخة PHP الرسمية المناسبة لـ Laravel
+# 1. استخدام نسخة PHP المتوافقة مع Laravel 13
 FROM php:8.4-fpm-alpine
-# 2. تثبيت أدوات النظام والـ Extensions المطلوبة لـ Laravel و Python
+
+# 2. تثبيت أدوات النظام والكمبيلر المطلوب لـ scikit-learn والمكتبات التانية
 RUN apk add --no-cache \
     nginx \
     supervisor \
@@ -12,7 +13,11 @@ RUN apk add --no-cache \
     git \
     python3 \
     py3-pip \
-    mariadb-client
+    mariadb-client \
+    build-base \
+    g++ \
+    musl-dev \
+    python3-dev
 
 # 3. تثبيت إضافات PHP (PHP Extensions)
 RUN docker-php-ext-install pdo_mysql bcmath
@@ -36,8 +41,8 @@ RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 RUN chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# 10. إعداد بورت السيرفر (Railway بيبعت البورت في متغير $PORT)
+# 10. إعداد بورت السيرفر
 EXPOSE 80
 
-# 11. أمر التشغيل اللي بيعمل Migrate لقاعدة البيانات وبيشغل السيرفر
+# 11. أمر التشغيل
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-80}
