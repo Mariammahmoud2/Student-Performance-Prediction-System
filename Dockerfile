@@ -1,6 +1,5 @@
 # 1. نستخدم نسخة PHP الرسمية المناسبة لـ Laravel
-FROM php:8.3-fpm-alpine
-
+FROM php:8.4-fpm-alpine
 # 2. تثبيت أدوات النظام والـ Extensions المطلوبة لـ Laravel و Python
 RUN apk add --no-cache \
     nginx \
