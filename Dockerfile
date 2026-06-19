@@ -1,7 +1,7 @@
 # 1. استخدام نسخة PHP المتوافقة مع لارافيل
 FROM php:8.4-fpm-alpine
 
-# 2. تثبيت الأدوات والـ Nginx والـ Node
+# 2. تثبيت الأدوات والـ Nginx والـ Node وأدوات بناء الـ Python (cmake, ninja)
 RUN apk add --no-cache \
     nginx \
     curl \
@@ -18,7 +18,9 @@ RUN apk add --no-cache \
     musl-dev \
     python3-dev \
     nodejs \
-    npm
+    npm \
+    cmake \
+    ninja
 
 # 3. تثبيت إضافات PHP
 RUN docker-php-ext-install pdo_mysql bcmath
@@ -40,6 +42,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 RUN npm install && npm run build
 
 # 9. تثبيت مكتبات الـ Python لنموذج الذكاء الاصطناعي
+# استخدام --break-system-packages للتعامل مع بيئة Alpine
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
 # 10. تظبيط صلاحيات الفولدرات في لارافيل
@@ -49,4 +52,5 @@ RUN chmod -R 775 storage bootstrap/cache \
 # 11. فتح بورت 80
 EXPOSE 80
 
+# 12. أمر التشغيل
 CMD php artisan migrate --force && php-fpm -D && nginx -g "daemon off;"
