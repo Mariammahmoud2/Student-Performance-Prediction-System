@@ -1,8 +1,7 @@
 # 1. نستخدم قاعدة Debian (تدعم CatBoost مباشرة)
 FROM python:3.12-slim
 
-# 2. تثبيت Nginx و PHP-FPM والمكتبات اللازمة
-RUN apt-get update && apt-get install -y \
+ RUN apt-get update && apt-get install -y \
     nginx \
     php8.4-fpm \
     php8.4-mysql \
@@ -10,13 +9,13 @@ RUN apt-get update && apt-get install -y \
     php8.4-xml \
     php8.4-curl \
     php8.4-zip \
+    php8.4-mbstring \
     curl \
     git \
     unzip \
     nodejs \
     npm \
     && rm -rf /var/lib/apt/lists/*
-
 # 3. تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
