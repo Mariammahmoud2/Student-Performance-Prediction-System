@@ -1,56 +1,46 @@
-# 1. استخدام نسخة PHP المتوافقة مع لارافيل
-FROM php:8.4-fpm-alpine
+# 1. نستخدم قاعدة Debian (تدعم CatBoost مباشرة)
+FROM python:3.12-slim
 
-# 2. تثبيت الأدوات والـ Nginx والـ Node وأدوات بناء الـ Python (cmake, ninja)
-RUN apk add --no-cache \
+# 2. تثبيت Nginx و PHP-FPM والمكتبات اللازمة
+RUN apt-get update && apt-get install -y \
     nginx \
+    php8.4-fpm \
+    php8.4-mysql \
+    php8.4-bcmath \
+    php8.4-xml \
+    php8.4-curl \
+    php8.4-zip \
     curl \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
     git \
-    python3 \
-    py3-pip \
-    mariadb-client \
-    build-base \
-    g++ \
-    musl-dev \
-    python3-dev \
+    unzip \
     nodejs \
     npm \
-    cmake \
-    ninja
+    && rm -rf /var/lib/apt/lists/*
 
-# 3. تثبيت إضافات PHP
-RUN docker-php-ext-install pdo_mysql bcmath
-
-# 4. تثبيت Composer
+# 3. تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 5. تحديد فولدر العمل
+# 4. تحديد فولدر العمل
 WORKDIR /var/www/html
 
-# 6. نسخ ملفات المشروع
+# 5. نسخ الملفات
 COPY . .
 
-# 7. إعداد ملف الـ Nginx جوه الكونتينر
-COPY nginx.conf /etc/nginx/http.d/default.conf
+# 6. تثبيت المكتبات (في Debian، سيتم تحميل catboost فوراً كنسخة جاهزة)
+RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
-# 8. تثبيت مكتبات PHP وبناء ملفات التنسيق (Vite)
+# 7. تثبيت PHP Dependencies وبناء Vite
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 RUN npm install && npm run build
 
-# 9. تثبيت مكتبات الـ Python (تثبيت عام ثم تثبيت catboost بنسخة جاهزة)
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages && \
-    pip install --no-cache-dir catboost==1.2.10 --only-binary=:all: --break-system-packages
-
-# 10. تظبيط صلاحيات الفولدرات في لارافيل
+# 8. ضبط الصلاحيات
 RUN chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# 11. فتح بورت 80
-EXPOSE 80
+# 9. إعداد الـ Nginx (النسخ لمسار Debian الصحيح)
+COPY nginx.conf /etc/nginx/sites-available/default
+RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-# 12. أمر التشغيل
-CMD php artisan migrate --force && php-fpm -D && nginx -g "daemon off;"
+# 10. التشغيل
+EXPOSE 80
+CMD service php8.4-fpm start && nginx -g "daemon off;"
