@@ -41,9 +41,9 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 RUN npm install && npm run build
 
-# 9. تثبيت مكتبات الـ Python لنموذج الذكاء الاصطناعي
-# استخدام --break-system-packages للتعامل مع بيئة Alpine
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+# 9. تثبيت مكتبات الـ Python (تثبيت عام ثم تثبيت catboost بنسخة جاهزة)
+RUN pip install --no-cache-dir -r requirements.txt --break-system-packages && \
+    pip install --no-cache-dir catboost==1.2.10 --only-binary=:all: --break-system-packages
 
 # 10. تظبيط صلاحيات الفولدرات في لارافيل
 RUN chmod -R 775 storage bootstrap/cache \
