@@ -1,46 +1,33 @@
-# 1. نستخدم قاعدة Debian
-FROM python:3.12-slim
+# استخدام نسخة خفيفة ومستقرة
+FROM php:8.4-cli-slim
 
-# 2. تثبيت الأدوات الأساسية
+# تثبيت الإضافات الضرورية
 RUN apt-get update && apt-get install -y \
-    nginx \
-    php8.4-fpm \
-    php8.4-mysql \
-    php8.4-bcmath \
-    php8.4-xml \
-    php8.4-curl \
-    php8.4-zip \
-    php8.4-mbstring \
-    php8.4-intl \
-    php8.4-gd \
-    curl \
-    git \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zip \
     unzip \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+    git \
+    python3 \
+    python3-pip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql zip
 
-# 3. تثبيت Composer
+# تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 COPY . .
 
-# 4. التعديل المهم لضمان عمل الـ Socket
-RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+# تثبيت المكتبات (مع تجاهل التحقق من النظام لـ Python)
+RUN pip install catboost --break-system-packages
+RUN composer install --no-dev --optimize-autoloader
 
-# 5. تثبيت المكتبات وبناء المشروع
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-RUN npm install && npm run build
+# تعيين صلاحيات المجلدات
+RUN chmod -R 777 storage bootstrap/cache
 
-# 6. ضبط الصلاحيات
-RUN chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
-
-# 7. إعداد Nginx
-COPY nginx.conf /etc/nginx/sites-available/default
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
+# تشغيل سيرفر لارافيل مباشرة على المنفذ 80
 EXPOSE 80
-CMD service php8.4-fpm start && nginx -g "daemon off;"
+CMD php artisan serve --host=0.0.0.0 --port=80
